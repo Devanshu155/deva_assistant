@@ -1,0 +1,73 @@
+name: deva_assistant
+description: DEVA — Futuristic voice-first AI assistant. Privacy-first, all data stored locally.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: '>=3.19.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # ── State Management ──────────────────────────────────────────────────────
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # ── Navigation ────────────────────────────────────────────────────────────
+  go_router: ^13.2.0
+
+  # ── Local Database (privacy-first, all data on device) ───────────────────
+  sqflite_sqlcipher: ^3.1.0+1
+  path: ^1.9.0
+
+  # ── Secure Storage (encrypted on-device key vault) ────────────────────────
+  flutter_secure_storage: ^9.0.0
+
+  # ── Local Authentication (biometric / PIN) ────────────────────────────────
+  local_auth: ^2.2.0
+
+  # ── Voice & Background ───────────────────────────────────────────────────
+  speech_to_text: ^7.0.0
+  flutter_tts: ^4.0.2
+  permission_handler: ^11.3.1
+  flutter_background_service: ^3.0.1
+
+  # ── AI (Groq — OpenAI-compatible REST) ───────────────────────────────────
+  http: ^1.2.1
+  dart_openai: ^4.1.0   # OpenAI-compatible, works with Groq base URL
+
+  # ── UI & Fonts ────────────────────────────────────────────────────────────
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.0
+  lottie: ^3.1.2
+
+  # ── Connectivity (detect offline state) ──────────────────────────────────
+  connectivity_plus: ^6.0.5
+
+  # ── URL Launcher (web search) ─────────────────────────────────────────────
+  url_launcher: ^6.3.0
+
+  # ── Utilities ─────────────────────────────────────────────────────────────
+  intl: ^0.19.0
+  uuid: ^4.4.0
+  logger: ^2.4.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.11
+  riverpod_generator: ^2.4.3
+
+flutter:
+  uses-material-design: true
+
+  # GLSL Shaders for GPU-accelerated avatar effects
+  shaders:
+    - assets/shaders/orb_shader.frag
+
+  assets:
+    - assets/images/
+    - .env  # loaded at runtime for Groq API key
