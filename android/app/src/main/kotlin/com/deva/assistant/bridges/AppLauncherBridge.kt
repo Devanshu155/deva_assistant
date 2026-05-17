@@ -16,6 +16,7 @@ class AppLauncherBridge(private val context: Context) {
         channel.setMethodCallHandler { call, result ->
             when (call.method) {
                 "openApp" -> handleOpenApp(call, result)
+                "playOnYoutube" -> handlePlayOnYoutube(call, result)
                 else      -> result.notImplemented()
             }
         }
@@ -45,6 +46,20 @@ class AppLauncherBridge(private val context: Context) {
         }
 
         result.error("APP_NOT_FOUND", "Could not find app: $appName", null)
+    }
+
+    private fun handlePlayOnYoutube(call: MethodCall, result: MethodChannel.Result) {
+        val query = call.argument<String>("query") ?: ""
+        try {
+            val intent = Intent(Intent.ACTION_SEARCH)
+            intent.setPackage("com.google.android.youtube")
+            intent.putExtra("query", query)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+            result.success("Playing $query on YouTube.")
+        } catch (e: Exception) {
+            result.error("YOUTUBE_NOT_FOUND", "Could not play on YouTube: ${e.message}", null)
+        }
     }
 
     private fun launchByPackage(pkg: String): Boolean {

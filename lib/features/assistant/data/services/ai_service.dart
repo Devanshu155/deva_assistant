@@ -13,14 +13,16 @@ import '../../../../core/constants/app_constants.dart';
 
 /// Result from the AI service containing the text response and optional tool call.
 class AiResponse {
-  final String text;          // Spoken response text
-  final String? toolName;     // Tool to execute (null if none)
+  final String text;                    // Spoken response text
+  final String? toolName;              // Tool to execute (null if none)
   final Map<String, dynamic>? toolArgs; // Tool arguments
+  final String? detectedLangCode;      // BCP-47 language of the AI response (e.g. "hi-IN")
 
   const AiResponse({
     required this.text,
     this.toolName,
     this.toolArgs,
+    this.detectedLangCode,
   });
 
   bool get hasToolCall => toolName != null;
@@ -44,7 +46,7 @@ class AiService {
     final apiKey = await _secure.getGroqApiKey();
     if (apiKey == null || apiKey.isEmpty) {
       return const AiResponse(
-        text: 'I need an API key to work. Please add your Groq API key in Settings.',
+        text: 'I need an Activation Code to work. Please activate me in Settings.',
       );
     }
 
@@ -156,14 +158,18 @@ class AiService {
           debugPrint('[AI] Failed to parse tool args: ${fn['arguments']}');
         }
 
-        return AiResponse(
+      return AiResponse(
           text:     textContent.isNotEmpty ? textContent : 'Done!',
           toolName: toolName,
           toolArgs: toolArgs,
+          detectedLangCode: _detectLanguage(textContent),
         );
       }
 
-      return AiResponse(text: textContent.isNotEmpty ? textContent : 'I have nothing to say.');
+      return AiResponse(
+        text: textContent.isNotEmpty ? textContent : 'I have nothing to say.',
+        detectedLangCode: _detectLanguage(textContent),
+      );
     } catch (e) {
       debugPrint('[AI] Parse error: $e');
       return const AiResponse(text: 'I had trouble understanding that response.');
@@ -172,10 +178,33 @@ class AiService {
 
   // ── History management ────────────────────────────────────────────────
 
+  /// Append this conversation turn to the in-session history.
   void _appendToHistory(String userText, String aiText) {
     _conversationHistory
       ..add({'role': 'user',      'content': userText})
       ..add({'role': 'assistant', 'content': aiText});
+  }
+
+  /// Detect the language of a text response using simple Unicode script checks.
+  /// Returns a BCP-47 language code, or null if English/unknown.
+  String? _detectLanguage(String text) {
+    if (text.isEmpty) return null;
+    // Check for Devanagari (Hindi, Marathi, etc.)
+    if (RegExp(r'[\u0900-\u097F]').hasMatch(text)) return 'hi-IN';
+    // Arabic
+    if (RegExp(r'[\u0600-\u06FF]').hasMatch(text)) return 'ar-SA';
+    // Chinese
+    if (RegExp(r'[\u4E00-\u9FFF]').hasMatch(text)) return 'zh-CN';
+    // Japanese (Hiragana/Katakana)
+    if (RegExp(r'[\u3040-\u30FF]').hasMatch(text)) return 'ja-JP';
+    // Korean
+    if (RegExp(r'[\uAC00-\uD7AF]').hasMatch(text)) return 'ko-KR';
+    // Tamil
+    if (RegExp(r'[\u0B80-\u0BFF]').hasMatch(text)) return 'ta-IN';
+    // Telugu
+    if (RegExp(r'[\u0C00-\u0C7F]').hasMatch(text)) return 'te-IN';
+    // Default — don't switch TTS language
+    return null;
   }
 
   /// Clear in-session history (e.g., when user says "forget our conversation").

@@ -65,6 +65,22 @@ class DevaTools {
     },
   );
 
+  // ── Tool: Play on YouTube ─────────────────────────────────────────────
+  static const playOnYoutube = ToolDefinition(
+    name: 'play_on_youtube',
+    description: 'Searches and plays a video on YouTube.',
+    parameters: {
+      'type': 'object',
+      'properties': {
+        'query': {
+          'type': 'string',
+          'description': 'What to search for and play on YouTube',
+        },
+      },
+      'required': ['query'],
+    },
+  );
+
   // ── Tool: Set reminder / alarm ────────────────────────────────────────
   static const setReminder = ToolDefinition(
     name: 'set_reminder',
@@ -130,17 +146,65 @@ class DevaTools {
     },
   );
 
+  // ── Tool: System Status (Battery) ───────────────────────────────────────
+  static const getBatteryLevel = ToolDefinition(
+    name: 'get_battery_level',
+    description: 'Checks the current battery level and charging status of the device.',
+    parameters: {
+      'type': 'object',
+      'properties': {},
+    },
+  );
+
+  // ── Tool: Read Screen ───────────────────────────────────────────────────
+  static const readScreen = ToolDefinition(
+    name: 'read_screen',
+    description: 'Reads all the text currently visible on the user\'s screen. Use this when the user asks you to "summarize this", "read this", or asks questions about what they are looking at.',
+    parameters: {
+      'type': 'object',
+      'properties': {},
+    },
+  );
+
+  // ── Tool: Smart Home / HTTP Request ──────────────────────────────────────
+  static const makeHttpRequest = ToolDefinition(
+    name: 'make_http_request',
+    description: 'Makes an HTTP request to control local smart home devices (like Philips Hue or Home Assistant) or fetch data. Use this when the user asks to turn on lights, change temperature, or trigger a webhook.',
+    parameters: {
+      'type': 'object',
+      'properties': {
+        'url': {
+          'type': 'string',
+          'description': 'The URL or IP address to send the request to',
+        },
+        'method': {
+          'type': 'string',
+          'enum': ['GET', 'POST', 'PUT', 'DELETE'],
+        },
+        'body': {
+          'type': 'string',
+          'description': 'Optional JSON body payload as a string',
+        },
+      },
+      'required': ['url', 'method'],
+    },
+  );
+
   /// All tools as a JSON-serialisable list — passed to Groq API.
   static List<Map<String, dynamic>> get allAsJson => [
     openApp.toJson(),
     webSearch.toJson(),
+    playOnYoutube.toJson(),
     setReminder.toJson(),
     remember.toJson(),
     openUrl.toJson(),
+    getBatteryLevel.toJson(),
+    readScreen.toJson(),
+    makeHttpRequest.toJson(),
   ];
 
   /// All tool names.
   static const allNames = {
-    'open_app', 'web_search', 'set_reminder', 'remember', 'open_url',
+    'open_app', 'web_search', 'play_on_youtube', 'set_reminder', 'remember', 'open_url', 'get_battery_level', 'read_screen', 'make_http_request'
   };
 }

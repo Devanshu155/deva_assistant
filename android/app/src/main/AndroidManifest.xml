@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.deva.assistant">
 
     <!-- ── Permissions ─────────────────────────────────────────────────── -->
@@ -6,7 +7,7 @@
     <!-- Voice input (required) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
 
-    <!-- Network (Groq API calls only) -->
+    <!-- Network (Groq API calls only — HTTPS enforced) -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
@@ -20,10 +21,13 @@
     <!-- Vibration for haptic feedback -->
     <uses-permission android:name="android.permission.VIBRATE"/>
 
-    <!-- Background service & Ambient features -->
+    <!-- Background service & Ambient listening -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
+    <!-- Phase 2.3: Draw floating overlay over other apps -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
 
     <!-- ── App ────────────────────────────────────────────────────────── -->
@@ -36,6 +40,7 @@
         android:allowBackup="false"
         android:fullBackupContent="false">
 
+        <!-- Main app activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -45,7 +50,6 @@
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
 
-            <!-- Immersive full-screen (hide status + nav bars) -->
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme"/>
@@ -56,15 +60,57 @@
             </intent-filter>
         </activity>
 
+        <!-- Phase 2.3: Overlay activity for flutter_overlay_window.
+             This is the transparent activity the overlay is drawn into. -->
+        <activity
+            android:name="com.company.flutter_overlay_window.OverlayService"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:hardwareAccelerated="true"/>
+
         <!-- Flutter engine metadata -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2"/>
 
+        <!-- Background ambient listening service (wake word: "Hey DEVA") -->
         <service
             android:name="id.flutter.flutter_background_service.BackgroundService"
             android:foregroundServiceType="microphone"
-            android:exported="true" />
+            android:exported="true"/>
+
+        <!-- Phase 2.3: Overlay window service -->
+        <service
+            android:name="com.company.flutter_overlay_window.OverlayService"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection"
+            tools:node="replace"/>
+
+        <!-- Phase 4.5: Notification Listener Service -->
+        <service
+            android:name=".services.NotificationReaderService"
+            android:label="DEVA Notification Reader"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <!-- Phase 4.3: Screen Awareness (Accessibility Service) -->
+        <service
+            android:name=".services.DevaAccessibilityService"
+            android:label="DEVA Screen Awareness"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
     </application>
 
     <!-- Required for QUERY_ALL_PACKAGES -->
@@ -72,6 +118,11 @@
         <intent>
             <action android:name="android.intent.action.MAIN"/>
             <category android:name="android.intent.category.LAUNCHER"/>
+        </intent>
+        <!-- Allow launching browser for web search -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
         </intent>
     </queries>
 

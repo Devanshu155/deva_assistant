@@ -68,15 +68,7 @@ class AppTheme {
     // ── Icon ──────────────────────────────────────────────────────────
     iconTheme: const IconThemeData(color: AppColors.cyanPrimary, size: 22),
 
-    // ── Card ──────────────────────────────────────────────────────────
-    cardTheme: CardTheme(
-      color: AppColors.surface,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: AppColors.glassBorder, width: 0.5),
-      ),
-    ),
+
 
     // ── TextButton ────────────────────────────────────────────────────
     textButtonTheme: TextButtonThemeData(

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_description">Allows DEVA to read your screen to provide context-aware AI assistance.</string>
+</resources>

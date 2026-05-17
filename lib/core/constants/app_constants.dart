@@ -11,8 +11,8 @@ class AppConstants {
 
   // ── AI API Routing ──────────────────────────────────────────────────────
   // If you deploy the Stateless Proxy (proxy/worker.js), place the URL here.
-  // Otherwise, leave empty to use direct Groq connection (less secure).
-  static const String proxyBaseUrl  = ' https://deva-proxy.deva-proxy-devan-20260516.workers.dev'; // e.g. 'https://deva-proxy.your-name.workers.dev'
+  // Otherwise, leave empty to use direct Groq connection with local API key.
+  static const String proxyBaseUrl  = '';
   static const String groqBaseUrl   = 'https://api.groq.com/openai/v1';
   static const String groqModel     = 'llama-3.3-70b-versatile';
   static const int    groqMaxTokens = 512;   // Keep responses concise for TTS

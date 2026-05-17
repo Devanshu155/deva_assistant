@@ -5,6 +5,8 @@ library;
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:io';
+import 'dart:convert';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../shared/database/memory_dao.dart';
 
@@ -36,9 +38,13 @@ class ActionService {
     switch (toolName) {
       case 'open_app':    return _openApp(args);
       case 'web_search':  return _webSearch(args);
+      case 'play_on_youtube': return _playOnYoutube(args);
       case 'set_reminder':return _setReminder(args);
       case 'remember':    return _remember(args);
       case 'open_url':    return _openUrl(args);
+      case 'get_battery_level': return _getBatteryLevel();
+      case 'read_screen': return _readScreen();
+      case 'make_http_request': return _makeHttpRequest(args);
       default:
         return ActionResult(
           success: false,
@@ -82,6 +88,22 @@ class ActionService {
       return const ActionResult(success: false, message: 'I couldn\'t open the browser.');
     } catch (e) {
       return ActionResult(success: false, message: 'Search failed: $e');
+    }
+  }
+
+  /// Search and play on YouTube.
+  Future<ActionResult> _playOnYoutube(Map<String, dynamic> args) async {
+    final query = args['query'] as String? ?? '';
+    try {
+      final result = await _appLauncherChannel.invokeMethod<String>(
+        'playOnYoutube',
+        {'query': query},
+      );
+      return ActionResult(success: true, message: result);
+    } catch (e) {
+      debugPrint('[Action] playOnYoutube error: $e. Falling back to web search.');
+      // Fallback to web search if youtube app fails
+      return _webSearch({'query': 'youtube $query'});
     }
   }
 
@@ -136,5 +158,66 @@ class ActionService {
       success: true,
       message: 'I\'ve remembered that "$key" is "$value".',
     );
+  }
+
+  // ── Tool implementations: Battery ───────────────────────────────────────
+
+  Future<ActionResult> _getBatteryLevel() async {
+    try {
+      final String result = await _systemActionChannel.invokeMethod('getBatteryLevel');
+      return ActionResult(success: true, message: result);
+    } catch (e) {
+      return ActionResult(success: false, message: 'I couldn\'t check the battery level.');
+    }
+  }
+
+  // ── Tool implementations: Screen Awareness ───────────────────────────────────────
+
+  Future<ActionResult> _readScreen() async {
+    try {
+      final String result = await _systemActionChannel.invokeMethod('readScreen');
+      return ActionResult(success: true, message: result);
+    } catch (e) {
+      return ActionResult(success: false, message: 'I cannot see the screen. Please enable my Accessibility permission in Settings.');
+    }
+  }
+
+  // ── Tool implementations: Smart Home / Network ─────────────────────────────────
+
+  Future<ActionResult> _makeHttpRequest(Map<String, dynamic> args) async {
+    final urlStr = args['url'] as String? ?? '';
+    final method = args['method'] as String? ?? 'GET';
+    final bodyStr = args['body'] as String?;
+
+    if (urlStr.isEmpty) return const ActionResult(success: false, message: 'No URL provided.');
+
+    try {
+      final uri = Uri.parse(urlStr);
+      final client = HttpClient();
+      client.connectionTimeout = const Duration(seconds: 5);
+
+      HttpClientRequest request;
+      switch (method.toUpperCase()) {
+        case 'POST': request = await client.postUrl(uri); break;
+        case 'PUT': request = await client.putUrl(uri); break;
+        case 'DELETE': request = await client.deleteUrl(uri); break;
+        default: request = await client.getUrl(uri); break;
+      }
+
+      if (bodyStr != null && bodyStr.isNotEmpty) {
+        request.headers.contentType = ContentType.json;
+        request.write(bodyStr);
+      }
+
+      final response = await request.close();
+      final responseBody = await response.transform(utf8.decoder).join();
+
+      return ActionResult(
+        success: response.statusCode >= 200 && response.statusCode < 300,
+        message: 'Request completed with status ${response.statusCode}. Response: $responseBody',
+      );
+    } catch (e) {
+      return ActionResult(success: false, message: 'Failed to connect to the local device: $e');
+    }
   }
 }

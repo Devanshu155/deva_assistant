@@ -1,7 +1,7 @@
 /// Preferences DAO — local SQLite-backed user settings.
 library;
 
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_sqlcipher/sqflite.dart';
 import '../database/database_helper.dart';
 import '../../core/constants/app_constants.dart';
 

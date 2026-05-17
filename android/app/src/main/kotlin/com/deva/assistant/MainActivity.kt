@@ -5,15 +5,18 @@ import android.net.Uri
 import android.provider.AlarmClock
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import com.deva.assistant.bridges.AppLauncherBridge
 import com.deva.assistant.bridges.SystemActionBridge
+import com.deva.assistant.bridges.NotificationBridge
 
 class MainActivity : FlutterActivity() {
 
     companion object {
         const val CHANNEL_APP_LAUNCHER   = "com.deva.assistant/app_launcher"
         const val CHANNEL_SYSTEM_ACTION  = "com.deva.assistant/system_action"
+        const val CHANNEL_NOTIFICATIONS  = "com.deva.assistant/notifications"
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -26,5 +29,7 @@ class MainActivity : FlutterActivity() {
         SystemActionBridge(this).register(
             MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL_SYSTEM_ACTION)
         )
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL_NOTIFICATIONS)
+            .setStreamHandler(NotificationBridge(this))
     }
 }

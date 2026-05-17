@@ -71,11 +71,9 @@ Future<void> initializeBackgroundService() async {
       onStart: onStart,
       autoStart: false, // Don't auto-start on boot unless user explicitly allows
       isForegroundMode: true,
-      foregroundServiceTypes: ['microphone'],
       notificationChannelId: 'deva_ambient',
       initialNotificationTitle: 'DEVA Ambient Mode',
       initialNotificationContent: 'Listening for "Hey DEVA"...',
-      initialNotificationIcon: 'ic_launcher',
     ),
     iosConfiguration: IosConfiguration(
       autoStart: false,

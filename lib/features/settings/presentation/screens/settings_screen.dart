@@ -3,6 +3,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:ui';
 import '../../../../shared/services/secure_storage_service.dart';
@@ -13,6 +14,7 @@ import '../../../../shared/services/voice_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../assistant/presentation/providers/assistant_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -30,9 +32,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   double _speechRate = AppConstants.defaultSpeechRate;
   double _pitch      = AppConstants.defaultTtsPitch;
   double _volume     = AppConstants.defaultTtsVolume;
-  bool   _haptic     = true;
-  bool   _apiKeySet  = false;
-  bool   _showApiKey = false;
+  bool   _haptic          = true;
+  bool   _apiKeySet       = false;
+  bool   _showApiKey      = false;
+  bool   _overlayGranted  = false;
 
   @override
   void initState() {
@@ -47,17 +50,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _loadSettings() async {
-    final rate   = await _prefs.getSpeechRate();
-    final pitch  = await _prefs.getTtsPitch();
-    final vol    = await _prefs.getTtsVolume();
-    final haptic = await _prefs.getHapticFeedback();
-    final hasKey = await _secure.hasGroqApiKey();
+    final rate    = await _prefs.getSpeechRate();
+    final pitch   = await _prefs.getTtsPitch();
+    final vol     = await _prefs.getTtsVolume();
+    final haptic  = await _prefs.getHapticFeedback();
+    final hasKey  = await _secure.hasGroqApiKey();
+    final overlay = await ref.read(assistantProvider.notifier).hasOverlayPermission();
     setState(() {
-      _speechRate = rate;
-      _pitch      = pitch;
-      _volume     = vol;
-      _haptic     = haptic;
-      _apiKeySet  = hasKey;
+      _speechRate      = rate;
+      _pitch           = pitch;
+      _volume          = vol;
+      _haptic          = haptic;
+      _apiKeySet       = hasKey;
+      _overlayGranted  = overlay;
     });
   }
 
@@ -89,11 +94,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
         children: [
-          _sectionHeader('AI API KEY'),
+          _sectionHeader('ACTIVATION'),
           _apiKeySection(),
           const SizedBox(height: 20),
           _sectionHeader('VOICE'),
           _voiceSection(),
+          const SizedBox(height: 20),
+          _sectionHeader('AMBIENT & JARVIS MODE'),
+          _ambientSection(),
           const SizedBox(height: 20),
           _sectionHeader('PRIVACY & DATA'),
           _privacySection(),
@@ -138,7 +146,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         Icon(_apiKeySet ? Icons.lock_rounded : Icons.lock_open_rounded,
             color: _apiKeySet ? AppColors.greenAccent : AppColors.textHint, size: 18),
         const SizedBox(width: 8),
-        Text(_apiKeySet ? 'API key stored securely' : 'No API key set',
+        Text(_apiKeySet ? 'Activated successfully' : 'Not activated',
             style: AppTypography.bodyMedium.copyWith(
               color: _apiKeySet ? AppColors.greenAccent : AppColors.textHint,
             )),
@@ -158,7 +166,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         obscureText: !_showApiKey,
         style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
         decoration: InputDecoration(
-          hintText: 'Paste your Groq API key here...',
+          hintText: 'Enter your DEVA Activation Code...',
           prefixIcon: const Icon(Icons.vpn_key_rounded, color: AppColors.cyanPrimary, size: 18),
           suffixIcon: IconButton(
             icon: Icon(_showApiKey ? Icons.visibility_off_rounded : Icons.visibility_rounded,
@@ -172,12 +180,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         width: double.infinity,
         child: ElevatedButton(
           onPressed: _saveApiKey,
-          child: const Text('Save API Key'),
+          child: const Text('Activate DEVA'),
         ),
       ),
       const SizedBox(height: 8),
       Text(
-        '🔒 Your API key is encrypted and stored in the Android Keystore. It never leaves your device.',
+        '🔒 Your Activation Code is encrypted and stored in the Android Keystore. It never leaves your device.',
         style: AppTypography.bodySmall.copyWith(color: AppColors.textHint, fontSize: 11),
       ),
     ]),
@@ -226,6 +234,127 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       Slider(value: value, min: min, max: max, onChanged: onChanged),
     ]);
 
+  // ── Ambient / Notification section ─────────────────────────────────────────
+  Widget _ambientSection() => _glassCard(Padding(
+    padding: const EdgeInsets.all(16),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      // Overlay Permission
+      Row(children: [
+        Icon(
+          _overlayGranted ? Icons.layers_rounded : Icons.layers_clear_rounded,
+          color: _overlayGranted ? AppColors.greenAccent : AppColors.textHint,
+          size: 20,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Floating Avatar Overlay',
+                style: AppTypography.bodyLarge.copyWith(fontSize: 14)),
+            Text(
+              _overlayGranted
+                  ? 'DEVA can appear over other apps when "Hey DEVA" is detected.'
+                  : 'Grant permission so DEVA can float over other apps.',
+              style: AppTypography.bodySmall,
+            ),
+          ]),
+        ),
+      ]),
+      const SizedBox(height: 14),
+      SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          icon: Icon(
+            _overlayGranted ? Icons.check_circle_rounded : Icons.open_in_new_rounded,
+            size: 16,
+          ),
+          label: Text(_overlayGranted ? 'Overlay Permission Granted' : 'Grant Overlay Permission'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: _overlayGranted
+                ? AppColors.greenAccent.withOpacity(0.1)
+                : AppColors.cyanPrimary.withOpacity(0.12),
+            foregroundColor: _overlayGranted ? AppColors.greenAccent : AppColors.cyanPrimary,
+            side: BorderSide(
+              color: _overlayGranted ? AppColors.greenAccent : AppColors.cyanPrimary,
+            ),
+          ),
+          onPressed: _overlayGranted ? null : () async {
+            final granted = await ref
+                .read(assistantProvider.notifier)
+                .requestOverlayPermission();
+            setState(() => _overlayGranted = granted);
+          },
+        ),
+      ),
+      const SizedBox(height: 20),
+      const Divider(color: AppColors.glassBorder),
+      const SizedBox(height: 20),
+      // Notification Permission
+      Row(children: [
+        const Icon(Icons.notifications_active_rounded, color: AppColors.cyanPrimary, size: 20),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Read Notifications', style: AppTypography.bodyLarge.copyWith(fontSize: 14)),
+            Text('Allow DEVA to read incoming messages (WhatsApp, SMS) aloud.',
+              style: AppTypography.bodySmall,
+            ),
+          ]),
+        ),
+      ]),
+      const SizedBox(height: 14),
+      SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          icon: const Icon(Icons.open_in_new_rounded, size: 16),
+          label: const Text('Open Notification Settings'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.cyanPrimary.withOpacity(0.12),
+            foregroundColor: AppColors.cyanPrimary,
+            side: const BorderSide(color: AppColors.cyanPrimary),
+          ),
+          onPressed: () async {
+             final channel = MethodChannel('com.deva.assistant/system_action');
+             channel.invokeMethod('openNotificationSettings');
+          },
+        ),
+      ),
+      const SizedBox(height: 20),
+      const Divider(color: AppColors.glassBorder),
+      const SizedBox(height: 20),
+      // Accessibility Permission
+      Row(children: [
+        const Icon(Icons.screen_search_desktop_rounded, color: AppColors.cyanPrimary, size: 20),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Screen Awareness', style: AppTypography.bodyLarge.copyWith(fontSize: 14)),
+            Text('Allow DEVA to see your screen so you can ask context-aware questions.',
+              style: AppTypography.bodySmall,
+            ),
+          ]),
+        ),
+      ]),
+      const SizedBox(height: 14),
+      SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          icon: const Icon(Icons.open_in_new_rounded, size: 16),
+          label: const Text('Open Accessibility Settings'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.cyanPrimary.withOpacity(0.12),
+            foregroundColor: AppColors.cyanPrimary,
+            side: const BorderSide(color: AppColors.cyanPrimary),
+          ),
+          onPressed: () async {
+             final channel = MethodChannel('com.deva.assistant/system_action');
+             channel.invokeMethod('openAccessibilitySettings');
+          },
+        ),
+      ),
+    ]),
+  ));
+
+
   // ── Privacy section ──────────────────────────────────────────────────
   Widget _privacySection() => _glassCard(Column(children: [
     _dangerTile(
@@ -251,7 +380,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _dangerTile(
       icon: Icons.delete_forever_rounded,
       title: 'Delete All Data',
-      subtitle: 'Wipe everything: history, memory, API key',
+      subtitle: 'Wipe everything: history, memory, activation status',
       isDestructive: true,
       onTap: () => _confirmAction('Delete ALL data? This cannot be undone.', () async {
         await HistoryDao.instance.clearAll();
