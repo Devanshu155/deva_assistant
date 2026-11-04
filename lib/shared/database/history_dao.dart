@@ -26,24 +26,25 @@ class HistoryEntry {
   });
 
   factory HistoryEntry.fromMap(Map<String, dynamic> map) => HistoryEntry(
-    id:          map['id'] as String,
-    userText:    map['user_text'] as String,
-    aiResponse:  map['ai_response'] as String,
-    toolUsed:    map['tool_used'] as String?,
-    toolArgs:    map['tool_args'] as String?,
-    createdAt:   DateTime.fromMillisecondsSinceEpoch(map['created_at'] as int),
-    durationMs:  map['duration_ms'] as int?,
-  );
+        id: map['id'] as String,
+        userText: map['user_text'] as String,
+        aiResponse: map['ai_response'] as String,
+        toolUsed: map['tool_used'] as String?,
+        toolArgs: map['tool_args'] as String?,
+        createdAt:
+            DateTime.fromMillisecondsSinceEpoch(map['created_at'] as int),
+        durationMs: map['duration_ms'] as int?,
+      );
 
   Map<String, dynamic> toMap() => {
-    'id':          id,
-    'user_text':   userText,
-    'ai_response': aiResponse,
-    'tool_used':   toolUsed,
-    'tool_args':   toolArgs,
-    'created_at':  createdAt.millisecondsSinceEpoch,
-    'duration_ms': durationMs,
-  };
+        'id': id,
+        'user_text': userText,
+        'ai_response': aiResponse,
+        'tool_used': toolUsed,
+        'tool_args': toolArgs,
+        'created_at': createdAt.millisecondsSinceEpoch,
+        'duration_ms': durationMs,
+      };
 }
 
 /// Data access object for the history table.
@@ -64,13 +65,13 @@ class HistoryDao {
   }) async {
     final db = await _db.database;
     final entry = HistoryEntry(
-      id:          _uuid.v4(),
-      userText:    userText,
-      aiResponse:  aiResponse,
-      toolUsed:    toolUsed,
-      toolArgs:    toolArgs,
-      createdAt:   DateTime.now(),
-      durationMs:  durationMs,
+      id: _uuid.v4(),
+      userText: userText,
+      aiResponse: aiResponse,
+      toolUsed: toolUsed,
+      toolArgs: toolArgs,
+      createdAt: DateTime.now(),
+      durationMs: durationMs,
     );
     await db.insert(AppConstants.tableHistory, entry.toMap());
     return entry.id;

@@ -9,6 +9,9 @@ build/
 
 # ── Android ───────────────────────────────────────────────────────────────
 android/.gradle/
+android/.kotlin/
+*.salive
+*_output.txt
 android/local.properties
 android/key.properties
 *.apk

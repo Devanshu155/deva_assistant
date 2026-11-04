@@ -20,7 +20,6 @@ class AssistantScreen extends ConsumerStatefulWidget {
 
 class _AssistantScreenState extends ConsumerState<AssistantScreen>
     with WidgetsBindingObserver {
-
   @override
   void initState() {
     super.initState();
@@ -60,7 +59,8 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen>
           // ── DEVA logo / name ─────────────────────────────────────────
           Positioned(
             top: MediaQuery.of(context).padding.top + 24,
-            left: 0, right: 0,
+            left: 0,
+            right: 0,
             child: _AppTitle(isOffline: state.isOffline),
           ),
 
@@ -77,14 +77,16 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen>
           // ── Status label (LISTENING / THINKING / etc.) ────────────────
           Positioned(
             bottom: size.height * 0.22,
-            left: 0, right: 0,
+            left: 0,
+            right: 0,
             child: _StatusLabel(state: state),
           ),
 
           // ── Transcript / response overlay ────────────────────────────
           Positioned(
             bottom: size.height * 0.10,
-            left: 32, right: 32,
+            left: 32,
+            right: 32,
             child: _TranscriptOverlay(state: state),
           ),
 
@@ -92,7 +94,8 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen>
           if (state.isOffline)
             Positioned(
               top: MediaQuery.of(context).padding.top + 64,
-              left: 0, right: 0,
+              left: 0,
+              right: 0,
               child: const _OfflineBadge(),
             ),
         ],
@@ -117,7 +120,7 @@ class _BackgroundCanvas extends StatelessWidget {
           center: const Alignment(0, -0.3),
           radius: 1.2,
           colors: [
-            accent.withOpacity(0.07),
+            accent.withValues(alpha: 0.07),
             AppColors.background,
           ],
         ),
@@ -177,7 +180,7 @@ class _StatusLabel extends StatelessWidget {
         textAlign: TextAlign.center,
         style: AppTypography.neonLabel.copyWith(
           color: AppColors.glowColorFor(state.status.colorKey)
-              .withOpacity(0.85),
+              .withValues(alpha: 0.85),
           letterSpacing: 4,
           fontSize: 12,
         ),
@@ -241,9 +244,9 @@ class _OfflineBadge extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: AppColors.redError.withOpacity(0.15),
+          color: AppColors.redError.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.redError.withOpacity(0.4)),
+          border: Border.all(color: AppColors.redError.withValues(alpha: 0.4)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

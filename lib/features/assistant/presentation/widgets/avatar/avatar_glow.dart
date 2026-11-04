@@ -43,7 +43,7 @@ class _AvatarGlowState extends State<AvatarGlow>
     super.didUpdateWidget(old);
     // Speed up during active states
     final fast = widget.state == DevaState.processing ||
-                 widget.state == DevaState.listening;
+        widget.state == DevaState.listening;
     _ctrl.duration = Duration(milliseconds: fast ? 800 : 2200);
     if (!_ctrl.isAnimating) _ctrl.repeat(reverse: true);
   }
@@ -84,8 +84,8 @@ class _GlowPainter extends CustomPainter {
     final outerPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          color.withOpacity(0.15 * intensity),
-          color.withOpacity(0.05 * intensity),
+          color.withValues(alpha: 0.15 * intensity),
+          color.withValues(alpha: 0.05 * intensity),
           Colors.transparent,
         ],
         stops: const [0.0, 0.5, 1.0],
@@ -97,7 +97,7 @@ class _GlowPainter extends CustomPainter {
     final innerPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          color.withOpacity(0.25 * intensity),
+          color.withValues(alpha: 0.25 * intensity),
           Colors.transparent,
         ],
       ).createShader(Rect.fromCircle(center: center, radius: innerRadius));

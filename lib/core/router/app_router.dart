@@ -15,9 +15,9 @@ import '../../features/shell/presentation/shell_screen.dart';
 /// Route path constants — never use raw strings in code.
 class Routes {
   Routes._();
-  static const String assistant  = '/assistant';
-  static const String history    = '/history';
-  static const String settings   = '/settings';
+  static const String assistant = '/assistant';
+  static const String history = '/history';
+  static const String settings = '/settings';
   static const String onboarding = '/onboarding';
 }
 
@@ -61,7 +61,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
     ],
-
     errorBuilder: (context, state) => Scaffold(
       backgroundColor: const Color(0xFF050A14),
       body: Center(

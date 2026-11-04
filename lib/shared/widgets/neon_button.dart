@@ -67,19 +67,20 @@ class _NeonButtonState extends State<NeonButton>
           width: widget.width,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           decoration: BoxDecoration(
-            color: widget.color.withOpacity(0.12),
+            color: widget.color.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: widget.color, width: 1),
             boxShadow: [
               BoxShadow(
-                color: widget.color.withOpacity(0.25),
+                color: widget.color.withValues(alpha: 0.25),
                 blurRadius: 16,
                 spreadRadius: 0,
               ),
             ],
           ),
           child: Row(
-            mainAxisSize: widget.width != null ? MainAxisSize.max : MainAxisSize.min,
+            mainAxisSize:
+                widget.width != null ? MainAxisSize.max : MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (widget.icon != null) ...[

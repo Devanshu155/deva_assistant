@@ -31,18 +31,17 @@ void main() async {
   // Immersive dark system UI (transparent status bar, dark icons)
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
-      statusBarColor:                   Colors.transparent,
-      statusBarIconBrightness:          Brightness.light,
-      systemNavigationBarColor:         AppColors.background,
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: AppColors.background,
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
 
   // Warm up local encrypted SQLite database
-  await DatabaseHelper.instance.database;
-
-  // Initialize ambient background service (wake word: "Hey DEVA")
-  await initializeBackgroundService();
+  // Kick off heavy initialization after the app is running so we
+  // don't delay first frame / time-to-interactive.
+  // Database and background service will initialize asynchronously.
 
   // Check if first launch (needs onboarding)
   final onboardingDone =
@@ -53,6 +52,23 @@ void main() async {
       child: DevaApp(showOnboarding: !onboardingDone),
     ),
   );
+
+  // Perform non-blocking warm-up tasks after launching the UI.
+  Future.microtask(() async {
+    try {
+      await DatabaseHelper.instance.database;
+    } catch (e) {
+      // Defensive: log but don't crash the app during warm-up
+      // (use debugPrint to keep dependency surface minimal)
+      debugPrint('[Main] DB warm-up failed: $e');
+    }
+
+    try {
+      await initializeBackgroundService();
+    } catch (e) {
+      debugPrint('[Main] Background service init failed: $e');
+    }
+  });
 }
 
 class DevaApp extends ConsumerWidget {

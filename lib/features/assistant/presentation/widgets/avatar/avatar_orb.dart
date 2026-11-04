@@ -16,8 +16,7 @@ class AvatarOrb extends StatefulWidget {
   State<AvatarOrb> createState() => _AvatarOrbState();
 }
 
-class _AvatarOrbState extends State<AvatarOrb>
-    with TickerProviderStateMixin {
+class _AvatarOrbState extends State<AvatarOrb> with TickerProviderStateMixin {
   late AnimationController _pulseCtrl;
   late AnimationController _rotateCtrl;
   late AnimationController _shakeCtrl;
@@ -55,9 +54,9 @@ class _AvatarOrbState extends State<AvatarOrb>
     _shakeX = TweenSequence<double>([
       TweenSequenceItem(tween: Tween(begin: 0, end: -12), weight: 1),
       TweenSequenceItem(tween: Tween(begin: -12, end: 12), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: 12, end: -8),  weight: 2),
-      TweenSequenceItem(tween: Tween(begin: -8,  end: 8),  weight: 2),
-      TweenSequenceItem(tween: Tween(begin: 8,   end: 0),  weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 12, end: -8), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: -8, end: 8), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 8, end: 0), weight: 1),
     ]).animate(CurvedAnimation(parent: _shakeCtrl, curve: Curves.easeInOut));
 
     _updateForState(widget.state);
@@ -77,35 +76,35 @@ class _AvatarOrbState extends State<AvatarOrb>
         _pulseCtrl.duration = const Duration(milliseconds: 2800);
         _rotateCtrl.duration = const Duration(seconds: 12);
         _scale = Tween<double>(begin: 0.96, end: 1.04).animate(
-          CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut));
+            CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut));
         break;
       case DevaState.greeting:
         _pulseCtrl.duration = const Duration(milliseconds: 1200);
         _scale = Tween<double>(begin: 0.9, end: 1.12).animate(
-          CurvedAnimation(parent: _pulseCtrl, curve: Curves.elasticOut));
+            CurvedAnimation(parent: _pulseCtrl, curve: Curves.elasticOut));
         break;
       case DevaState.listening:
         _pulseCtrl.duration = const Duration(milliseconds: 600);
         _rotateCtrl.duration = const Duration(seconds: 4);
         _scale = Tween<double>(begin: 0.98, end: 1.08).animate(
-          CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut));
+            CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut));
         break;
       case DevaState.processing:
         _pulseCtrl.duration = const Duration(milliseconds: 400);
         _rotateCtrl.duration = const Duration(seconds: 2);
-        _scale = Tween<double>(begin: 1.0, end: 1.06).animate(
-          CurvedAnimation(parent: _pulseCtrl, curve: Curves.linear));
+        _scale = Tween<double>(begin: 1.0, end: 1.06)
+            .animate(CurvedAnimation(parent: _pulseCtrl, curve: Curves.linear));
         break;
       case DevaState.speaking:
         _pulseCtrl.duration = const Duration(milliseconds: 800);
         _rotateCtrl.duration = const Duration(seconds: 6);
         _scale = Tween<double>(begin: 0.97, end: 1.07).animate(
-          CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut));
+            CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut));
         break;
       case DevaState.success:
         _pulseCtrl.duration = const Duration(milliseconds: 500);
         _scale = Tween<double>(begin: 1.0, end: 1.15).animate(
-          CurvedAnimation(parent: _pulseCtrl, curve: Curves.bounceOut));
+            CurvedAnimation(parent: _pulseCtrl, curve: Curves.bounceOut));
         break;
       case DevaState.error:
         _shakeCtrl.forward(from: 0);
@@ -176,9 +175,9 @@ class _OrbPainter extends CustomPainter {
     final glowPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          glowColor.withOpacity(0.0),
-          glowColor.withOpacity(0.12 + 0.08 * pulseValue),
-          glowColor.withOpacity(0.0),
+          glowColor.withValues(alpha: 0.0),
+          glowColor.withValues(alpha: 0.12 + 0.08 * pulseValue),
+          glowColor.withValues(alpha: 0.0),
         ],
         stops: const [0.55, 0.75, 1.0],
       ).createShader(Rect.fromCircle(center: center, radius: radius * 1.3));
@@ -199,7 +198,7 @@ class _OrbPainter extends CustomPainter {
     final shimmerPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          Colors.white.withOpacity(0.3 + 0.1 * pulseValue),
+          Colors.white.withValues(alpha: 0.3 + 0.1 * pulseValue),
           Colors.transparent,
         ],
       ).createShader(
@@ -210,7 +209,7 @@ class _OrbPainter extends CustomPainter {
     // ── Surface rim ───────────────────────────────────────────────────
     final rimPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..color = glowColor.withOpacity(0.4 + 0.2 * pulseValue)
+      ..color = glowColor.withValues(alpha: 0.4 + 0.2 * pulseValue)
       ..strokeWidth = 1.5
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
     canvas.drawCircle(center, radius - 1, rimPaint);
@@ -218,6 +217,7 @@ class _OrbPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_OrbPainter old) =>
-      old.rotation != rotation || old.pulseValue != pulseValue ||
+      old.rotation != rotation ||
+      old.pulseValue != pulseValue ||
       old.glowColor != glowColor;
 }

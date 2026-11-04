@@ -24,6 +24,7 @@
     <!-- Background service & Ambient listening -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
@@ -59,14 +60,6 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-
-        <!-- Phase 2.3: Overlay activity for flutter_overlay_window.
-             This is the transparent activity the overlay is drawn into. -->
-        <activity
-            android:name="com.company.flutter_overlay_window.OverlayService"
-            android:exported="false"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"
-            android:hardwareAccelerated="true"/>
 
         <!-- Flutter engine metadata -->
         <meta-data

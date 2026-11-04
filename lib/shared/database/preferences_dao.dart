@@ -72,8 +72,20 @@ class PreferencesDao {
     return v ?? 'Sir';
   }
 
-  Future<void> setDisplayName(String name) async =>
-      _set('display_name', name);
+  Future<void> setDisplayName(String name) async => _set('display_name', name);
+
+  // ── Voice language ─────────────────────────────────────────────────────
+
+  /// Get the preferred voice language locale ID for STT (e.g., 'hi_IN', 'en_US').
+  /// Returns null if not set, meaning "auto-detect from device".
+  Future<String?> getVoiceLanguage() async => _get('voice_language');
+
+  /// Set the preferred voice language locale ID for STT.
+  Future<void> setVoiceLanguage(String localeId) async =>
+      _set('voice_language', localeId);
+
+  Future<void> customSet(String key, String value) async => _set(key, value);
+  Future<String?> customGet(String key) async => _get(key);
 
   // ── All as map ────────────────────────────────────────────────────────
 

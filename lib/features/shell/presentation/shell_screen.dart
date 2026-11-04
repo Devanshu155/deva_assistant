@@ -13,7 +13,7 @@ class ShellScreen extends StatelessWidget {
 
   int _selectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
-    if (location.startsWith(Routes.history))  return 1;
+    if (location.startsWith(Routes.history)) return 1;
     if (location.startsWith(Routes.settings)) return 2;
     return 0;
   }
@@ -28,9 +28,15 @@ class ShellScreen extends StatelessWidget {
         selectedIndex: _selectedIndex(context),
         onTap: (i) {
           switch (i) {
-            case 0: context.go(Routes.assistant); break;
-            case 1: context.go(Routes.history);   break;
-            case 2: context.go(Routes.settings);  break;
+            case 0:
+              context.go(Routes.assistant);
+              break;
+            case 1:
+              context.go(Routes.history);
+              break;
+            case 2:
+              context.go(Routes.settings);
+              break;
           }
         },
       ),
@@ -54,7 +60,7 @@ class _GlassNavBar extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.surface.withOpacity(0.75),
+            color: AppColors.surface.withValues(alpha: 0.75),
             border: const Border(
               top: BorderSide(color: AppColors.glassBorder, width: 0.5),
             ),
@@ -119,7 +125,7 @@ class _NavItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         decoration: BoxDecoration(
           color: selected
-              ? AppColors.cyanPrimary.withOpacity(0.1)
+              ? AppColors.cyanPrimary.withValues(alpha: 0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(14),
         ),
@@ -133,8 +139,7 @@ class _NavItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 color: color,
-                fontWeight:
-                    selected ? FontWeight.w600 : FontWeight.w400,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                 letterSpacing: 0.5,
               ),
             ),

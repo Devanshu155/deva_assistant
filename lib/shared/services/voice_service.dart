@@ -13,28 +13,28 @@ import '../database/preferences_dao.dart';
 
 /// Callback types for voice events.
 typedef OnPartialResult = void Function(String partial);
-typedef OnFinalResult   = void Function(String text);
-typedef OnTtsComplete   = void Function();
-typedef OnError         = void Function(String error);
+typedef OnFinalResult = void Function(String text);
+typedef OnTtsComplete = void Function();
+typedef OnError = void Function(String error);
 
 class VoiceService {
   VoiceService._();
   static final VoiceService instance = VoiceService._();
 
-  final SpeechToText _stt   = SpeechToText();
-  final FlutterTts   _tts   = FlutterTts();
-  final _prefs               = PreferencesDao.instance;
+  final SpeechToText _stt = SpeechToText();
+  final FlutterTts _tts = FlutterTts();
+  final _prefs = PreferencesDao.instance;
 
-  bool   _sttReady   = false;
-  bool   _isSpeaking = false;
-  bool   _isListening = false;
+  bool _sttReady = false;
+  bool _isSpeaking = false;
+  bool _isListening = false;
   String _currentTtsLang = 'en-US'; // tracks the currently set TTS language
 
   // ── Callbacks ─────────────────────────────────────────────────────────
   OnPartialResult? onPartialResult;
-  OnFinalResult?   onFinalResult;
-  OnTtsComplete?   onTtsComplete;
-  OnError?         onError;
+  OnFinalResult? onFinalResult;
+  OnTtsComplete? onTtsComplete;
+  OnError? onError;
 
   // ── Init ──────────────────────────────────────────────────────────────
 
@@ -63,14 +63,15 @@ class VoiceService {
       onError?.call('TTS error: $msg');
     });
 
-    debugPrint('[VoiceService] Init complete. STT ready: $_sttReady, TTS lang: $_currentTtsLang');
+    debugPrint(
+        '[VoiceService] Init complete. STT ready: $_sttReady, TTS lang: $_currentTtsLang');
     return _sttReady;
   }
 
   /// Converts Flutter device locale (e.g. "hi_IN") to a TTS BCP-47 language code (e.g. "hi-IN").
   String _deviceLocaleToTtsLang() {
     final locale = ui.PlatformDispatcher.instance.locale;
-    final lang   = locale.languageCode;
+    final lang = locale.languageCode;
     final country = locale.countryCode ?? '';
     if (country.isNotEmpty) return '$lang-$country';
     // Common fallbacks
@@ -93,8 +94,8 @@ class VoiceService {
   }
 
   Future<void> _applyTtsSettings() async {
-    final rate   = await _prefs.getSpeechRate();
-    final pitch  = await _prefs.getTtsPitch();
+    final rate = await _prefs.getSpeechRate();
+    final pitch = await _prefs.getTtsPitch();
     final volume = await _prefs.getTtsVolume();
     await _tts.setLanguage(_currentTtsLang);
     await _tts.setSpeechRate(rate);
@@ -119,6 +120,9 @@ class VoiceService {
 
     _isSpeaking = true;
     await _tts.speak(text);
+
+    // Dynamic hands-free barge-in: monitor for wake/stop words during speech
+    _startBargeInListening();
   }
 
   /// Stop any ongoing speech.
@@ -131,22 +135,33 @@ class VoiceService {
 
   // ── STT ───────────────────────────────────────────────────────────────
 
-  /// Start listening for a voice command using device's current locale.
+  /// Start listening for a voice command.
+  /// Uses the user's saved language preference, or falls back to device locale.
   Future<void> startListening() async {
     if (!_sttReady || _isListening || _isSpeaking) return;
 
     _isListening = true;
 
-    // Multi-language: always use the device's current locale for STT
-    final systemLocale = await _stt.systemLocale();
-    final localeId     = systemLocale?.localeId ?? 'en_US';
+    // Multi-language: use saved preference first, then device locale as fallback
+    final savedLang = await _prefs.getVoiceLanguage();
+    String localeId;
+    if (savedLang != null && savedLang.isNotEmpty) {
+      localeId = savedLang;
+    } else {
+      final systemLocale = await _stt.systemLocale();
+      localeId = systemLocale?.localeId ?? 'en_US';
+    }
+
+    debugPrint('[VoiceService] STT listening with locale: $localeId');
 
     await _stt.listen(
-      onResult:  _onSttResult,
-      listenFor: const Duration(seconds: 30),
-      pauseFor:  Duration(milliseconds: AppConstants.sttSilenceTimeout),
-      localeId:  localeId,
-      listenMode: ListenMode.confirmation,
+      onResult: _onSttResult,
+      listenOptions: SpeechListenOptions(
+        listenFor: const Duration(seconds: 30),
+        pauseFor: Duration(milliseconds: AppConstants.sttSilenceTimeout),
+        localeId: localeId,
+        listenMode: ListenMode.confirmation,
+      ),
     );
   }
 
@@ -169,10 +184,17 @@ class VoiceService {
   }
 
   // ── State getters ─────────────────────────────────────────────────────
-  bool   get isSpeaking   => _isSpeaking;
-  bool   get isListening  => _isListening;
-  bool   get isReady      => _sttReady;
-  String get ttsLanguage  => _currentTtsLang;
+  bool get isSpeaking => _isSpeaking;
+  bool get isListening => _isListening;
+  bool get isReady => _sttReady;
+  String get ttsLanguage => _currentTtsLang;
+
+  /// Returns the list of locales the on-device STT engine supports.
+  /// Each entry has a localeId (e.g. 'hi_IN') and a name (e.g. 'हिन्दी (भारत)').
+  Future<List<LocaleName>> getAvailableLocales() async {
+    if (!_sttReady) return [];
+    return _stt.locales();
+  }
 
   // ── Settings reload (call after changing prefs in Settings screen) ─────
   Future<void> reloadSettings() async => _applyTtsSettings();
@@ -181,5 +203,64 @@ class VoiceService {
   Future<void> dispose() async {
     await _tts.stop();
     await _stt.stop();
+  }
+
+  Future<void> _startBargeInListening() async {
+    if (!_sttReady || _isListening) return;
+
+    final savedLang = await _prefs.getVoiceLanguage();
+    String localeId;
+    if (savedLang != null && savedLang.isNotEmpty) {
+      localeId = savedLang;
+    } else {
+      final systemLocale = await _stt.systemLocale();
+      localeId = systemLocale?.localeId ?? 'en_US';
+    }
+
+    try {
+      await _stt.listen(
+        onResult: (SpeechRecognitionResult result) async {
+          final words = result.recognizedWords.toLowerCase();
+
+          final stopPhrases = [
+            'hey deva',
+            'deva',
+            'jarvis',
+            'stop',
+            'cancel',
+            'shut up',
+            'shutup',
+            'quiet',
+            'bas',
+            'ruko',
+            'listen'
+          ];
+
+          bool shouldInterrupt = false;
+          for (final phrase in stopPhrases) {
+            if (words.contains(phrase)) {
+              shouldInterrupt = true;
+              break;
+            }
+          }
+
+          if (shouldInterrupt && _isSpeaking) {
+            debugPrint(
+                '[VoiceService] Hands-free interrupt detected! Words: $words');
+            await stopSpeaking();
+            await stopListening();
+            onFinalResult?.call('__barge_in_triggered__');
+          }
+        },
+        listenOptions: SpeechListenOptions(
+          listenFor: const Duration(seconds: 15),
+          pauseFor: const Duration(seconds: 5),
+          localeId: localeId,
+          listenMode: ListenMode.dictation,
+          partialResults: true,
+        ),
+      );
+      _isListening = true;
+    } catch (_) {}
   }
 }

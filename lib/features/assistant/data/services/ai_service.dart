@@ -4,6 +4,7 @@
 library;
 
 import 'dart:convert';
+import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import '../../domain/tools/tool_definitions.dart';
@@ -13,10 +14,11 @@ import '../../../../core/constants/app_constants.dart';
 
 /// Result from the AI service containing the text response and optional tool call.
 class AiResponse {
-  final String text;                    // Spoken response text
-  final String? toolName;              // Tool to execute (null if none)
+  final String text; // Spoken response text
+  final String? toolName; // Tool to execute (null if none)
   final Map<String, dynamic>? toolArgs; // Tool arguments
-  final String? detectedLangCode;      // BCP-47 language of the AI response (e.g. "hi-IN")
+  final String?
+      detectedLangCode; // BCP-47 language of the AI response (e.g. "hi-IN")
 
   const AiResponse({
     required this.text,
@@ -46,7 +48,8 @@ class AiService {
     final apiKey = await _secure.getGroqApiKey();
     if (apiKey == null || apiKey.isEmpty) {
       return const AiResponse(
-        text: 'I need an Activation Code to work. Please activate me in Settings.',
+        text:
+            'I need an Activation Code to work. Please activate me in Settings.',
       );
     }
 
@@ -55,8 +58,8 @@ class AiService {
 
     // Determine route: Proxy vs Direct
     final useProxy = AppConstants.proxyBaseUrl.isNotEmpty;
-    final endpoint = useProxy 
-        ? AppConstants.proxyBaseUrl 
+    final endpoint = useProxy
+        ? AppConstants.proxyBaseUrl
         : '${AppConstants.groqBaseUrl}/chat/completions';
 
     final headers = <String, String>{
@@ -70,18 +73,20 @@ class AiService {
     }
 
     try {
-      final response = await http.post(
-        Uri.parse(endpoint),
-        headers: headers,
-        body: jsonEncode({
-          'model': AppConstants.groqModel,
-          'messages': messages,
-          'tools': DevaTools.allAsJson,
-          'tool_choice': 'auto',
-          'max_tokens': AppConstants.groqMaxTokens,
-          'temperature': AppConstants.groqTemp,
-        }),
-      );
+      final response = await http
+          .post(
+            Uri.parse(endpoint),
+            headers: headers,
+            body: jsonEncode({
+              'model': AppConstants.groqModel,
+              'messages': messages,
+              'tools': DevaTools.allAsJson,
+              'tool_choice': 'auto',
+              'max_tokens': AppConstants.groqMaxTokens,
+              'temperature': AppConstants.groqTemp,
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -91,15 +96,46 @@ class AiService {
         return result;
       } else {
         debugPrint('[AI] Groq error ${response.statusCode}: ${response.body}');
+        // Defensive: Clear in-memory history on failure so a malformed XML turn cannot poison future prompts
+        _conversationHistory.clear();
+
+        // Try to extract the actual error message from Groq's response
+        String errorDetail = '';
+        try {
+          final errorData = jsonDecode(response.body) as Map<String, dynamic>;
+          final errorObj = errorData['error'] as Map<String, dynamic>?;
+          errorDetail = errorObj?['message'] as String? ?? '';
+
+          final failedGen =
+              errorObj?['failed_generation'] ?? errorData['failed_generation'];
+          if (failedGen != null) {
+            errorDetail += '\n\nGenerated output:\n$failedGen';
+          }
+        } catch (_) {}
+
+        if (response.statusCode == 401) {
+          return const AiResponse(
+            text:
+                'My API key appears to be invalid. Please update it in Settings.',
+          );
+        }
         return AiResponse(
-          text: 'I encountered an error. Status: ${response.statusCode}. '
-                'Please check your API key in Settings.',
+          text: errorDetail.isNotEmpty
+              ? 'I hit a problem: $errorDetail'
+              : 'I encountered an error (code ${response.statusCode}). Please check Settings.',
         );
       }
+    } on TimeoutException catch (e) {
+      debugPrint('[AI] Groq request timeout: $e');
+      return const AiResponse(
+        text:
+            'I timed out waiting for a response, sir. Please check your connection.',
+      );
     } catch (e) {
       debugPrint('[AI] Network error: $e');
       return const AiResponse(
-        text: 'I could not reach my brain right now. Please check your internet connection.',
+        text:
+            'I could not reach my brain right now. Please check your internet connection.',
       );
     }
   }
@@ -119,9 +155,10 @@ class AiService {
     ];
 
     // Add recent conversation history (limited to avoid token waste)
-    final recentHistory = _conversationHistory.length > AppConstants.maxContextTurns
-        ? _conversationHistory.sublist(
-            _conversationHistory.length - AppConstants.maxContextTurns)
+    final recentHistory = _conversationHistory.length >
+            AppConstants.maxContextTurns
+        ? _conversationHistory
+            .sublist(_conversationHistory.length - AppConstants.maxContextTurns)
         : List.of(_conversationHistory);
 
     messages.addAll(recentHistory);
@@ -138,7 +175,8 @@ class AiService {
     try {
       final choices = data['choices'] as List<dynamic>;
       if (choices.isEmpty) {
-        return const AiResponse(text: 'I received an empty response. Please try again.');
+        return const AiResponse(
+            text: 'I received an empty response. Please try again.');
       }
 
       final message = choices[0]['message'] as Map<String, dynamic>;
@@ -153,13 +191,14 @@ class AiService {
 
         Map<String, dynamic> toolArgs = {};
         try {
-          toolArgs = jsonDecode(fn['arguments'] as String) as Map<String, dynamic>;
+          toolArgs =
+              jsonDecode(fn['arguments'] as String) as Map<String, dynamic>;
         } catch (_) {
           debugPrint('[AI] Failed to parse tool args: ${fn['arguments']}');
         }
 
-      return AiResponse(
-          text:     textContent.isNotEmpty ? textContent : 'Done!',
+        return AiResponse(
+          text: textContent.isNotEmpty ? textContent : 'Done!',
           toolName: toolName,
           toolArgs: toolArgs,
           detectedLangCode: _detectLanguage(textContent),
@@ -172,7 +211,8 @@ class AiService {
       );
     } catch (e) {
       debugPrint('[AI] Parse error: $e');
-      return const AiResponse(text: 'I had trouble understanding that response.');
+      return const AiResponse(
+          text: 'I had trouble understanding that response.');
     }
   }
 
@@ -181,7 +221,7 @@ class AiService {
   /// Append this conversation turn to the in-session history.
   void _appendToHistory(String userText, String aiText) {
     _conversationHistory
-      ..add({'role': 'user',      'content': userText})
+      ..add({'role': 'user', 'content': userText})
       ..add({'role': 'assistant', 'content': aiText});
   }
 

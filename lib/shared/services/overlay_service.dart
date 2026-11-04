@@ -32,24 +32,32 @@ class OverlayService {
 
   /// Show the floating DEVA avatar overlay.
   /// Call this when wake word is detected and the app is in the background.
-  Future<void> showOverlay() async {
-    if (!_hasPermission) {
+  Future<bool> showOverlay() async {
+    if (!await checkPermission()) {
       debugPrint('[Overlay] No permission — cannot show overlay.');
-      return;
+      return false;
     }
-    if (await FlutterOverlayWindow.isActive()) return; // already showing
+    if (await FlutterOverlayWindow.isActive()) {
+      debugPrint('[Overlay] Overlay already active.');
+      return true;
+    }
 
-    await FlutterOverlayWindow.showOverlay(
-      height: 260,
-      width: 260,
-      alignment: OverlayAlignment.center,
-      flag: OverlayFlag.defaultFlag,
-      visibility: NotificationVisibility.visibilityPublic,
-      positionGravity: PositionGravity.auto,
-      enableDrag: true,
-    );
-
-    debugPrint('[Overlay] Floating DEVA avatar shown.');
+    try {
+      await FlutterOverlayWindow.showOverlay(
+        height: 260,
+        width: 260,
+        alignment: OverlayAlignment.center,
+        flag: OverlayFlag.defaultFlag,
+        visibility: NotificationVisibility.visibilityPublic,
+        positionGravity: PositionGravity.auto,
+        enableDrag: true,
+      );
+      debugPrint('[Overlay] Floating DEVA avatar shown.');
+      return true;
+    } catch (e) {
+      debugPrint('[Overlay] Failed to show overlay: $e');
+      return false;
+    }
   }
 
   /// Hide the floating overlay.
@@ -72,6 +80,5 @@ class OverlayService {
   }
 
   /// Stream of messages received FROM the overlay widget back to the main app.
-  Stream<dynamic> get overlayMessages =>
-      FlutterOverlayWindow.overlayListener;
+  Stream<dynamic> get overlayMessages => FlutterOverlayWindow.overlayListener;
 }

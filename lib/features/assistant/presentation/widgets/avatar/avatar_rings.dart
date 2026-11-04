@@ -25,9 +25,15 @@ class _AvatarRingsState extends State<AvatarRings>
   @override
   void initState() {
     super.initState();
-    _ring1 = AnimationController(vsync: this, duration: const Duration(seconds: 6))..repeat();
-    _ring2 = AnimationController(vsync: this, duration: const Duration(seconds: 9))..repeat();
-    _ring3 = AnimationController(vsync: this, duration: const Duration(seconds: 14))..repeat();
+    _ring1 =
+        AnimationController(vsync: this, duration: const Duration(seconds: 6))
+          ..repeat();
+    _ring2 =
+        AnimationController(vsync: this, duration: const Duration(seconds: 9))
+          ..repeat();
+    _ring3 =
+        AnimationController(vsync: this, duration: const Duration(seconds: 14))
+          ..repeat();
     _updateSpeeds();
   }
 
@@ -40,10 +46,10 @@ class _AvatarRingsState extends State<AvatarRings>
   void _updateSpeeds() {
     final multiplier = switch (widget.state) {
       DevaState.processing => 3.0,
-      DevaState.listening  => 2.0,
-      DevaState.speaking   => 1.5,
-      DevaState.greeting   => 1.8,
-      _                    => 1.0,
+      DevaState.listening => 2.0,
+      DevaState.speaking => 1.5,
+      DevaState.greeting => 1.8,
+      _ => 1.0,
     };
     _ring1.duration = Duration(milliseconds: (6000 / multiplier).round());
     _ring2.duration = Duration(milliseconds: (9000 / multiplier).round());
@@ -63,13 +69,13 @@ class _AvatarRingsState extends State<AvatarRings>
 
   double get _opacity {
     return switch (widget.state) {
-      DevaState.idle      => 0.3,
-      DevaState.greeting  => 0.7,
+      DevaState.idle => 0.3,
+      DevaState.greeting => 0.7,
       DevaState.listening => 0.8,
-      DevaState.processing=> 0.9,
-      DevaState.speaking  => 0.6,
-      DevaState.success   => 0.9,
-      DevaState.error     => 0.4,
+      DevaState.processing => 0.9,
+      DevaState.speaking => 0.6,
+      DevaState.success => 0.9,
+      DevaState.error => 0.4,
     };
   }
 
@@ -133,7 +139,7 @@ class _RingsPainter extends CustomPainter {
   ) {
     final paint = Paint()
       ..style = PaintingStyle.stroke
-      ..color = color.withOpacity(opacity)
+      ..color = color.withValues(alpha: opacity)
       ..strokeWidth = strokeWidth
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5);
 
@@ -159,7 +165,7 @@ class _RingsPainter extends CustomPainter {
     canvas.drawCircle(
       Offset(dotX, dotY),
       1.5,
-      Paint()..color = color.withOpacity(0.8),
+      Paint()..color = color.withValues(alpha: 0.8),
     );
 
     canvas.restore();

@@ -42,11 +42,12 @@ void _startAmbientListening(SpeechToText stt, ServiceInstance service) async {
   await stt.listen(
     onResult: (SpeechRecognitionResult result) {
       final transcript = result.recognizedWords.toLowerCase();
-      
+
       // Wake Word Trigger Logic
-      if (transcript.contains('hey deva') || transcript.contains('deva wake up')) {
+      if (transcript.contains('hey deva') ||
+          transcript.contains('deva wake up')) {
         debugPrint('[Ambient] WAKE WORD DETECTED!');
-        
+
         // Stop listening temporarily so the main app can take over the mic
         stt.stop();
 
@@ -54,12 +55,14 @@ void _startAmbientListening(SpeechToText stt, ServiceInstance service) async {
         service.invoke('wakeWordDetected', {'transcript': transcript});
       }
     },
-    listenFor: const Duration(seconds: 60), // Listen for long stretches
-    pauseFor: const Duration(seconds: 3),
-    partialResults: true, // Need partials to catch the wake word mid-sentence
-    localeId: localeId,
-    cancelOnError: true,
-    listenMode: ListenMode.dictation,
+    listenOptions: SpeechListenOptions(
+      listenFor: const Duration(seconds: 60),
+      pauseFor: const Duration(seconds: 3),
+      partialResults: true,
+      localeId: localeId,
+      cancelOnError: true,
+      listenMode: ListenMode.dictation,
+    ),
   );
 }
 
@@ -69,7 +72,8 @@ Future<void> initializeBackgroundService() async {
   await service.configure(
     androidConfiguration: AndroidConfiguration(
       onStart: onStart,
-      autoStart: false, // Don't auto-start on boot unless user explicitly allows
+      autoStart:
+          false, // Don't auto-start on boot unless user explicitly allows
       isForegroundMode: true,
       notificationChannelId: 'deva_ambient',
       initialNotificationTitle: 'DEVA Ambient Mode',
@@ -83,4 +87,7 @@ Future<void> initializeBackgroundService() async {
       },
     ),
   );
+
+  // Start the background service after configuration so wake word events are active.
+  await service.startService();
 }

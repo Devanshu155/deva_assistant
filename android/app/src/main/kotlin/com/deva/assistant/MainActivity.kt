@@ -1,8 +1,5 @@
 package com.deva.assistant
 
-import android.content.Intent
-import android.net.Uri
-import android.provider.AlarmClock
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
@@ -14,22 +11,30 @@ import com.deva.assistant.bridges.NotificationBridge
 class MainActivity : FlutterActivity() {
 
     companion object {
-        const val CHANNEL_APP_LAUNCHER   = "com.deva.assistant/app_launcher"
-        const val CHANNEL_SYSTEM_ACTION  = "com.deva.assistant/system_action"
-        const val CHANNEL_NOTIFICATIONS  = "com.deva.assistant/notifications"
+        const val CHANNEL_APP_LAUNCHER  = "com.deva.assistant/app_launcher"
+        const val CHANNEL_SYSTEM_ACTION = "com.deva.assistant/system_action"
+        const val CHANNEL_NOTIFICATIONS = "com.deva.assistant/notifications"
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
-        // Register native bridges with the Flutter engine
+        val messenger = flutterEngine.dartExecutor.binaryMessenger
+
+        // AppLauncher bridge — opens/searches installed apps and Play Store
         AppLauncherBridge(this).register(
-            MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL_APP_LAUNCHER)
+            MethodChannel(messenger, CHANNEL_APP_LAUNCHER)
         )
+
+        // SystemAction bridge — settings navigation, permissions, screen reading.
+        // IMPORTANT: Pass 'this' (Activity), not applicationContext.
+        // SystemActionBridge holds it via WeakReference to prevent memory leaks.
         SystemActionBridge(this).register(
-            MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL_SYSTEM_ACTION)
+            MethodChannel(messenger, CHANNEL_SYSTEM_ACTION)
         )
-        EventChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL_NOTIFICATIONS)
+
+        // Notification event stream — forwards incoming notifications to Flutter
+        EventChannel(messenger, CHANNEL_NOTIFICATIONS)
             .setStreamHandler(NotificationBridge(this))
     }
 }

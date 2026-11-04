@@ -9,7 +9,7 @@ class NotificationService {
   static final NotificationService instance = NotificationService._();
 
   static const _channel = EventChannel('com.deva.assistant/notifications');
-  
+
   final _controller = StreamController<Map<String, dynamic>>.broadcast();
   Stream<Map<String, dynamic>> get notifications => _controller.stream;
 
@@ -20,7 +20,8 @@ class NotificationService {
     _subscription = _channel.receiveBroadcastStream().listen(
       (event) {
         try {
-          final Map<String, dynamic> data = Map<String, dynamic>.from(event as Map);
+          final Map<String, dynamic> data =
+              Map<String, dynamic>.from(event as Map);
           debugPrint('[NotificationService] Received: $data');
           _controller.add(data);
         } catch (e) {

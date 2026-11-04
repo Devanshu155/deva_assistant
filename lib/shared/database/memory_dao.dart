@@ -24,29 +24,31 @@ class MemoryEntry {
   });
 
   factory MemoryEntry.fromMap(Map<String, dynamic> map) => MemoryEntry(
-    id:        map['id'] as String,
-    keyName:   map['key_name'] as String,
-    value:     map['value'] as String,
-    category:  map['category'] as String,
-    createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at'] as int),
-    updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updated_at'] as int),
-  );
+        id: map['id'] as String,
+        keyName: map['key_name'] as String,
+        value: map['value'] as String,
+        category: map['category'] as String,
+        createdAt:
+            DateTime.fromMillisecondsSinceEpoch(map['created_at'] as int),
+        updatedAt:
+            DateTime.fromMillisecondsSinceEpoch(map['updated_at'] as int),
+      );
 
   Map<String, dynamic> toMap() => {
-    'id':         id,
-    'key_name':   keyName,
-    'value':      value,
-    'category':   category,
-    'created_at': createdAt.millisecondsSinceEpoch,
-    'updated_at': updatedAt.millisecondsSinceEpoch,
-  };
+        'id': id,
+        'key_name': keyName,
+        'value': value,
+        'category': category,
+        'created_at': createdAt.millisecondsSinceEpoch,
+        'updated_at': updatedAt.millisecondsSinceEpoch,
+      };
 }
 
 class MemoryDao {
   MemoryDao._();
   static final MemoryDao instance = MemoryDao._();
 
-  final _db   = DatabaseHelper.instance;
+  final _db = DatabaseHelper.instance;
   final _uuid = const Uuid();
 
   /// Upsert a memory (insert or update if key already exists).
@@ -55,7 +57,7 @@ class MemoryDao {
     required String value,
     String category = 'fact',
   }) async {
-    final db  = await _db.database;
+    final db = await _db.database;
     final now = DateTime.now().millisecondsSinceEpoch;
     final existing = await db.query(
       AppConstants.tableMemory,
@@ -65,10 +67,10 @@ class MemoryDao {
 
     if (existing.isEmpty) {
       await db.insert(AppConstants.tableMemory, {
-        'id':         _uuid.v4(),
-        'key_name':   key,
-        'value':      value,
-        'category':   category,
+        'id': _uuid.v4(),
+        'key_name': key,
+        'value': value,
+        'category': category,
         'created_at': now,
         'updated_at': now,
       });

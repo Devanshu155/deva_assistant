@@ -104,12 +104,12 @@ class _StateIconOverlayState extends State<_StateIconOverlay>
   }
 
   IconData? get _icon => switch (widget.state) {
-    DevaState.listening  => Icons.graphic_eq_rounded,
-    DevaState.processing => Icons.auto_awesome_rounded,
-    DevaState.error      => Icons.error_outline_rounded,
-    DevaState.success    => Icons.check_circle_outline_rounded,
-    _                    => null,
-  };
+        DevaState.listening => Icons.graphic_eq_rounded,
+        DevaState.processing => Icons.auto_awesome_rounded,
+        DevaState.error => Icons.error_outline_rounded,
+        DevaState.success => Icons.check_circle_outline_rounded,
+        _ => null,
+      };
 
   Color get _color => AppColors.glowColorFor(widget.state.colorKey);
 
@@ -123,7 +123,7 @@ class _StateIconOverlayState extends State<_StateIconOverlay>
       child: Icon(
         icon,
         size: widget.orbSize * 0.35,
-        color: _color.withOpacity(0.9),
+        color: _color.withValues(alpha: 0.9),
         shadows: [
           Shadow(color: _color, blurRadius: 20),
         ],

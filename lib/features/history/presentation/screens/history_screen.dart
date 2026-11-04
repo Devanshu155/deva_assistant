@@ -23,21 +23,29 @@ class HistoryScreen extends ConsumerWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: Text('History', style: AppTypography.headingSmall.copyWith(letterSpacing: 2)),
+        title: Text('History',
+            style: AppTypography.headingSmall.copyWith(letterSpacing: 2)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.delete_sweep_rounded, color: AppColors.redError),
+            icon: const Icon(Icons.delete_sweep_rounded,
+                color: AppColors.redError),
             onPressed: () async {
               final ok = await showDialog<bool>(
                 context: context,
                 builder: (_) => AlertDialog(
                   backgroundColor: AppColors.surface,
-                  title: Text('Clear all history?', style: AppTypography.headingSmall),
-                  content: Text('This cannot be undone.', style: AppTypography.bodyMedium),
+                  title: Text('Clear all history?',
+                      style: AppTypography.headingSmall),
+                  content: Text('This cannot be undone.',
+                      style: AppTypography.bodyMedium),
                   actions: [
-                    TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-                    TextButton(onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Clear', style: TextStyle(color: AppColors.redError))),
+                    TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancel')),
+                    TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Clear',
+                            style: TextStyle(color: AppColors.redError))),
                   ],
                 ),
               );
@@ -50,18 +58,28 @@ class HistoryScreen extends ConsumerWidget {
         ],
       ),
       body: historyAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.cyanPrimary)),
-        error: (e, _) => Center(child: Text('Error: $e', style: AppTypography.bodyMedium)),
+        loading: () => const Center(
+            child: CircularProgressIndicator(color: AppColors.cyanPrimary)),
+        error: (e, _) =>
+            Center(child: Text('Error: $e', style: AppTypography.bodyMedium)),
         data: (entries) {
           if (entries.isEmpty) {
             return Center(
-              child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Icon(Icons.history_rounded, size: 64, color: AppColors.textHint.withOpacity(0.4)),
-                const SizedBox(height: 16),
-                Text('No history yet', style: AppTypography.headingSmall.copyWith(color: AppColors.textHint)),
-                const SizedBox(height: 8),
-                Text('Talk to DEVA to see history here.', style: AppTypography.bodyMedium, textAlign: TextAlign.center),
-              ]),
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.history_rounded,
+                        size: 64,
+                        color: AppColors.textHint.withValues(alpha: 0.4)),
+                    const SizedBox(height: 16),
+                    Text('No history yet',
+                        style: AppTypography.headingSmall
+                            .copyWith(color: AppColors.textHint)),
+                    const SizedBox(height: 8),
+                    Text('Talk to DEVA to see history here.',
+                        style: AppTypography.bodyMedium,
+                        textAlign: TextAlign.center),
+                  ]),
             );
           }
           return ListView.builder(
@@ -80,47 +98,75 @@ class HistoryScreen extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: AppColors.glassWhite,
                         borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: AppColors.glassBorder, width: 0.5),
+                        border: Border.all(
+                            color: AppColors.glassBorder, width: 0.5),
                       ),
                       child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 18, vertical: 10),
                         leading: Container(
-                          width: 40, height: 40,
+                          width: 40,
+                          height: 40,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: AppColors.cyanPrimary.withOpacity(0.1),
-                            border: Border.all(color: AppColors.cyanPrimary.withOpacity(0.3)),
+                            color: AppColors.cyanPrimary.withValues(alpha: 0.1),
+                            border: Border.all(
+                                color: AppColors.cyanPrimary
+                                    .withValues(alpha: 0.3)),
                           ),
-                          child: const Icon(Icons.person_rounded, color: AppColors.cyanPrimary, size: 18),
+                          child: const Icon(Icons.person_rounded,
+                              color: AppColors.cyanPrimary, size: 18),
                         ),
-                        title: Text(e.userText, style: AppTypography.bodyLarge.copyWith(fontSize: 14, fontWeight: FontWeight.w600)),
-                        subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          const SizedBox(height: 4),
-                          Row(children: [
-                            const Icon(Icons.auto_awesome_rounded, size: 12, color: AppColors.cyanPrimary),
-                            const SizedBox(width: 4),
-                            Expanded(child: Text(e.aiResponse, style: AppTypography.bodyMedium.copyWith(fontSize: 12), maxLines: 2, overflow: TextOverflow.ellipsis)),
-                          ]),
-                          const SizedBox(height: 6),
-                          Row(children: [
-                            if (e.toolUsed != null) ...[
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: AppColors.purpleAccent.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: AppColors.purpleAccent.withOpacity(0.3)),
-                                ),
-                                child: Text(e.toolUsed!.replaceAll('_', ' ').toUpperCase(),
-                                    style: AppTypography.labelMedium.copyWith(color: AppColors.purpleAccent, fontSize: 9, letterSpacing: 1)),
-                              ),
-                              const SizedBox(width: 8),
-                            ],
-                            Text(dateStr, style: AppTypography.bodySmall),
-                          ]),
-                        ]),
+                        title: Text(e.userText,
+                            style: AppTypography.bodyLarge.copyWith(
+                                fontSize: 14, fontWeight: FontWeight.w600)),
+                        subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 4),
+                              Row(children: [
+                                const Icon(Icons.auto_awesome_rounded,
+                                    size: 12, color: AppColors.cyanPrimary),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                    child: Text(e.aiResponse,
+                                        style: AppTypography.bodyMedium
+                                            .copyWith(fontSize: 12),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis)),
+                              ]),
+                              const SizedBox(height: 6),
+                              Row(children: [
+                                if (e.toolUsed != null) ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.purpleAccent
+                                          .withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                          color: AppColors.purpleAccent
+                                              .withValues(alpha: 0.3)),
+                                    ),
+                                    child: Text(
+                                        e.toolUsed!
+                                            .replaceAll('_', ' ')
+                                            .toUpperCase(),
+                                        style: AppTypography.labelMedium
+                                            .copyWith(
+                                                color: AppColors.purpleAccent,
+                                                fontSize: 9,
+                                                letterSpacing: 1)),
+                                  ),
+                                  const SizedBox(width: 8),
+                                ],
+                                Text(dateStr, style: AppTypography.bodySmall),
+                              ]),
+                            ]),
                         trailing: IconButton(
-                          icon: const Icon(Icons.close_rounded, size: 16, color: AppColors.textHint),
+                          icon: const Icon(Icons.close_rounded,
+                              size: 16, color: AppColors.textHint),
                           onPressed: () async {
                             await HistoryDao.instance.deleteById(e.id);
                             ref.invalidate(historyProvider);

@@ -9,7 +9,8 @@ import '../../../../../features/assistant/data/models/assistant_state.dart';
 class AvatarParticles extends StatefulWidget {
   final DevaState state;
   final double orbSize;
-  const AvatarParticles({super.key, required this.state, required this.orbSize});
+  const AvatarParticles(
+      {super.key, required this.state, required this.orbSize});
 
   @override
   State<AvatarParticles> createState() => _AvatarParticlesState();
@@ -37,14 +38,14 @@ class _AvatarParticlesState extends State<AvatarParticles>
   }
 
   int _particleCount(DevaState s) => switch (s) {
-    DevaState.idle       => 12,
-    DevaState.greeting   => 20,
-    DevaState.listening  => 22,
-    DevaState.processing => 30,
-    DevaState.speaking   => 18,
-    DevaState.success    => 35,
-    DevaState.error      => 8,
-  };
+        DevaState.idle => 12,
+        DevaState.greeting => 20,
+        DevaState.listening => 22,
+        DevaState.processing => 30,
+        DevaState.speaking => 18,
+        DevaState.success => 35,
+        DevaState.error => 8,
+      };
 
   @override
   void didUpdateWidget(AvatarParticles old) {
@@ -81,10 +82,10 @@ class _AvatarParticlesState extends State<AvatarParticles>
 }
 
 class _Particle {
-  final double orbitRadius;   // Distance from center
-  final double speed;         // Orbit speed multiplier
-  final double startAngle;    // Initial angle
-  final double size;          // Dot size
+  final double orbitRadius; // Distance from center
+  final double speed; // Orbit speed multiplier
+  final double startAngle; // Initial angle
+  final double size; // Dot size
   final double opacity;
 
   const _Particle({
@@ -98,11 +99,11 @@ class _Particle {
   factory _Particle.random(math.Random rand, int index, int total) {
     final baseAngle = (index / total) * 2 * math.pi;
     return _Particle(
-      orbitRadius: 1.1 + rand.nextDouble() * 1.2,   // 1.1x–2.3x orb radius
-      speed:       0.3 + rand.nextDouble() * 0.7,
-      startAngle:  baseAngle + (rand.nextDouble() - 0.5) * 0.5,
-      size:        1.5 + rand.nextDouble() * 2.5,
-      opacity:     0.3 + rand.nextDouble() * 0.6,
+      orbitRadius: 1.1 + rand.nextDouble() * 1.2, // 1.1x–2.3x orb radius
+      speed: 0.3 + rand.nextDouble() * 0.7,
+      startAngle: baseAngle + (rand.nextDouble() - 0.5) * 0.5,
+      size: 1.5 + rand.nextDouble() * 2.5,
+      opacity: 0.3 + rand.nextDouble() * 0.6,
     );
   }
 }
@@ -127,11 +128,11 @@ class _ParticlesPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final speedMult = switch (state) {
       DevaState.processing => 2.5,
-      DevaState.listening  => 1.8,
-      DevaState.speaking   => 1.3,
-      DevaState.greeting   => 1.6,
-      DevaState.success    => 3.0,
-      _                    => 1.0,
+      DevaState.listening => 1.8,
+      DevaState.speaking => 1.3,
+      DevaState.greeting => 1.6,
+      DevaState.success => 3.0,
+      _ => 1.0,
     };
 
     for (final p in particles) {
@@ -141,7 +142,7 @@ class _ParticlesPainter extends CustomPainter {
       final y = center.dy + r * math.sin(angle) * 0.7; // squish for 3D
 
       final paint = Paint()
-        ..color = color.withOpacity(p.opacity)
+        ..color = color.withValues(alpha: p.opacity)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.0);
 
       canvas.drawCircle(Offset(x, y), p.size / 2, paint);

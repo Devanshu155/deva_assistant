@@ -1,0 +1,22 @@
+# DEVA Assistant Debugging & Optimization Task List
+
+- `[x]` Phase 1: Permission System & Lifecycle Handling
+  - `[x]` Remove `FLAG_ACTIVITY_CLEAR_TOP` from `SystemActionBridge.kt`
+  - `[x]` Add `WidgetsBindingObserver` to `SettingsScreen.dart`
+  - `[x]` Add Loading/Transition states for permissions
+- `[x]` Phase 2: MCP Refactoring & Universal App Awareness
+  - `[x]` Fix `lastForegroundPackage` detection in `DevaAccessibilityService.kt`
+  - `[x]` Optimize view hierarchy parsing
+  - `[x]` Enhance `_executeMcpWorkflow` in `ActionService.dart`
+- `[x]` Phase 3: Play Store Integration
+  - `[x]` Add `AppInstallService.dart` or function to `ActionService.dart`
+  - `[x]` Add intent to search Play Store
+- `[x]` Phase 4: Performance & Background Stability
+  - `[x]` Implement coroutines for parsing in `DevaAccessibilityService.kt`
+  - `[x]` Debounce accessibility events
+- `[x]` Phase 5: Logging, Error Recovery & Security
+  - `[x]` Implement robust error handling
+  - `[x]` Add detailed logging to Services
+- `[x]` Phase 6: Code Quality & Final Validation
+  - `[x]` Refactor large functions
+  - `[x]` Final audit and walkthrough generation

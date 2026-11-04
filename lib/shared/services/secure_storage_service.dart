@@ -16,9 +16,8 @@ class SecureStorageService {
   // Configure Android-specific encryption options (Keystore-backed AES-256)
   final _storage = const FlutterSecureStorage(
     aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
-      // Uses Android Keystore System — hardware-backed on supported devices
-    ),
+        // Uses the plugin's current Android encrypted storage backend.
+        ),
   );
 
   // ── Groq API Key ──────────────────────────────────────────────────────
@@ -70,6 +69,20 @@ class SecureStorageService {
   /// Wipe all secure storage — used in Settings > Delete All Data.
   Future<void> clearAll() async {
     await _storage.deleteAll();
+  }
+
+  // ── Demo / Guest Mode ───────────────────────────────────────────────
+
+  /// Save whether the user chose the demo (guest) experience.
+  Future<void> saveDemoMode(bool enabled) async {
+    await _storage.write(
+        key: AppConstants.keyDemoMode, value: enabled ? 'true' : 'false');
+  }
+
+  /// Returns true if user selected demo (guest) experience during onboarding.
+  Future<bool> isDemoMode() async {
+    final val = await _storage.read(key: AppConstants.keyDemoMode);
+    return val == 'true';
   }
 
   // ── Database Encryption Key ───────────────────────────────────────────

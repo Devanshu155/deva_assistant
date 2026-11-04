@@ -21,9 +21,17 @@ class _OverlayApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: OverlayWidget(),
+      color: Colors.transparent,
+      theme: ThemeData(
+        canvasColor: Colors.transparent,
+        scaffoldBackgroundColor: Colors.transparent,
+      ),
+      home: const Scaffold(
+        backgroundColor: Colors.transparent,
+        body: OverlayWidget(),
+      ),
     );
   }
 }
@@ -39,10 +47,10 @@ class OverlayWidget extends StatefulWidget {
 class _OverlayWidgetState extends State<OverlayWidget>
     with TickerProviderStateMixin {
   late AnimationController _pulseCtrl;
-  late Animation<double>   _pulse;
+  late Animation<double> _pulse;
 
   String _status = 'LISTENING';
-  Color  _color  = AppColors.greenAccent;
+  Color _color = AppColors.greenAccent;
 
   StreamSubscription? _msgSub;
 
@@ -65,7 +73,7 @@ class _OverlayWidgetState extends State<OverlayWidget>
       if (data is Map && mounted) {
         setState(() {
           _status = (data['status'] as String? ?? 'LISTENING').toUpperCase();
-          _color  = _colorForStatus(_status);
+          _color = _colorForStatus(_status);
         });
       }
     });
@@ -73,11 +81,16 @@ class _OverlayWidgetState extends State<OverlayWidget>
 
   Color _colorForStatus(String status) {
     switch (status) {
-      case 'LISTENING':  return AppColors.greenAccent;
-      case 'THINKING':   return AppColors.purpleAccent;
-      case 'SPEAKING':   return AppColors.cyanPrimary;
-      case 'ERROR':      return AppColors.redError;
-      default:           return AppColors.cyanPrimary;
+      case 'LISTENING':
+        return AppColors.greenAccent;
+      case 'THINKING':
+        return AppColors.purpleAccent;
+      case 'SPEAKING':
+        return AppColors.cyanPrimary;
+      case 'ERROR':
+        return AppColors.redError;
+      default:
+        return AppColors.cyanPrimary;
     }
   }
 
@@ -102,14 +115,14 @@ class _OverlayWidgetState extends State<OverlayWidget>
           height: 260,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.background.withOpacity(0.92),
+            color: AppColors.background.withValues(alpha: 0.92),
             border: Border.all(
-              color: _color.withOpacity(0.5),
+              color: _color.withValues(alpha: 0.5),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: _color.withOpacity(0.4),
+                color: _color.withValues(alpha: 0.4),
                 blurRadius: 30,
                 spreadRadius: 4,
               ),
@@ -126,19 +139,20 @@ class _OverlayWidgetState extends State<OverlayWidget>
               children: [
                 // Mini orb
                 Container(
-                  width: 80, height: 80,
+                  width: 80,
+                  height: 80,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
                         _color,
-                        _color.withOpacity(0.4),
+                        _color.withValues(alpha: 0.4),
                         AppColors.background,
                       ],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: _color.withOpacity(0.6),
+                        color: _color.withValues(alpha: 0.6),
                         blurRadius: 20,
                       ),
                     ],
@@ -178,7 +192,7 @@ class _OverlayWidgetState extends State<OverlayWidget>
                 Text(
                   'Tap to open · Hold to close',
                   style: TextStyle(
-                    color: AppColors.textHint.withOpacity(0.5),
+                    color: AppColors.textHint.withValues(alpha: 0.5),
                     fontSize: 8,
                   ),
                 ),
@@ -192,11 +206,16 @@ class _OverlayWidgetState extends State<OverlayWidget>
 
   IconData _iconForStatus(String status) {
     switch (status) {
-      case 'LISTENING':  return Icons.graphic_eq_rounded;
-      case 'THINKING':   return Icons.auto_awesome_rounded;
-      case 'SPEAKING':   return Icons.volume_up_rounded;
-      case 'ERROR':      return Icons.error_outline_rounded;
-      default:           return Icons.auto_awesome_rounded;
+      case 'LISTENING':
+        return Icons.graphic_eq_rounded;
+      case 'THINKING':
+        return Icons.auto_awesome_rounded;
+      case 'SPEAKING':
+        return Icons.volume_up_rounded;
+      case 'ERROR':
+        return Icons.error_outline_rounded;
+      default:
+        return Icons.auto_awesome_rounded;
     }
   }
 }
